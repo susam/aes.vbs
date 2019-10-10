@@ -1,0 +1,14 @@
+#!/bin/sh
+
+decrypt()
+{
+    ciphertext=$1
+    hex_key=$(echo "$2" | openssl base64 -d | xxd -c32 -p)
+    hex_iv=$(echo "$3" | openssl base64 -d | xxd -p)
+
+    echo "$ciphertext" |
+        openssl aes-256-cbc -d -K "$hex_key" -iv "$hex_iv" -base64
+    echo
+}
+
+decrypt "$@"

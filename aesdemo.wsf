@@ -1,0 +1,7 @@
+<job>
+  <script language="VBScript" src="aes.vbs"/>
+  <script language="VBScript">
+    WScript.Echo CryptoDemo
+    WScript.Echo CryptoInfo
+  </script>
+</job>
