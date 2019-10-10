@@ -355,8 +355,8 @@ Questions and Answers
 
     Although both of these are available in `mscorlib.dll`, they are not
     registered in Windows registry by default. Therefore, like
-    [`AesManaged`] class, these two classes too cannot be used in
-    VBScript code without modifying the registry.
+    [`AesManaged`][AesManaged] class, these two classes too cannot be
+    used in VBScript code without modifying the registry.
 
     If we consider brute-force search of the key, then in case of a key
     derived from a password using a KDF, an attacker could either search
