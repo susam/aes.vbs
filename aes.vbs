@@ -3,7 +3,7 @@
 Set utf8 = CreateObject("System.Text.UTF8Encoding")
 Set b64Enc = CreateObject("System.Security.Cryptography.ToBase64Transform")
 Set b64Dec = CreateObject("System.Security.Cryptography.FromBase64Transform")
-set aes = CreateObject("System.Security.Cryptography.RijndaelManaged")
+Set aes = CreateObject("System.Security.Cryptography.RijndaelManaged")
 
 
 ' Return the minimum value between two integer values.
@@ -77,7 +77,7 @@ End Function
 '   String: IV and ciphertext joined with a colon in between.
 Function Encrypt(plaintext, key)
     aes.GenerateIV()
-    set aesEnc = aes.CreateEncryptor_2(B64Decode(key), aes.IV)
+    Set aesEnc = aes.CreateEncryptor_2(B64Decode(key), aes.IV)
     bytes = utf8.GetBytes_4(plaintext)
     bytes = aesEnc.TransformFinalBlock((bytes), 0, LenB(bytes))
     Encrypt = B64Encode(aes.IV) & ":" & B64Encode(bytes)
@@ -98,7 +98,7 @@ End Function
 '   String: Plaintext that the given ciphertext decrypts to.
 Function Decrypt(ivCiphertext, key)
     tokens = Split(ivCiphertext, ":")
-    set aesDec = aes.CreateDecryptor_2(B64Decode(key), B64Decode(tokens(0)))
+    Set aesDec = aes.CreateDecryptor_2(B64Decode(key), B64Decode(tokens(0)))
     bytes = B64Decode(tokens(1))
     bytes = aesDec.TransformFinalBlock((bytes), 0, LenB(bytes))
     Decrypt = utf8.GetString((bytes))
@@ -126,8 +126,8 @@ End Function
 
 ' Show interesting properties of cryptography objects used here.
 Function CryptoInfo
-    set enc = aes.CreateEncryptor_2(aes.Key, aes.IV)
-    set dec = aes.CreateDecryptor_2(aes.Key, aes.IV)
+    Set enc = aes.CreateEncryptor_2(aes.Key, aes.IV)
+    Set dec = aes.CreateDecryptor_2(aes.Key, aes.IV)
 
     CryptoInfo = "aes.BlockSize: " & aes.BlockSize & vbCrLf & _
                  "aes.FeedbackSize: " & aes.FeedbackSize & vbCrLf & _

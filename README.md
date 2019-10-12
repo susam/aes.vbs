@@ -283,7 +283,7 @@ Questions and Answers
     As a result, we get an error for this VBScript code:
 
     ```vbs
-    set aes = CreateObject("System.Security.Cryptography.AesManaged")
+    Set aes = CreateObject("System.Security.Cryptography.AesManaged")
     ```
 
     Here is the error that occurs:
