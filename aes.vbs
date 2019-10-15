@@ -80,10 +80,11 @@ End Function
 Function EqualBytes(a, b)
     EqualBytes = False
     If LenB(a) <> LenB(b) Then Exit Function
+    diff = 0
     For i = 1 to LenB(a)
-        If MidB(a, i, 1) <> MidB(b, i, 1) Then Exit Function
+        diff = diff Or (AscB(MidB(a, i, 1)) Xor AscB(MidB(b, i, 1)))
     Next
-    EqualBytes = True
+    EqualBytes = Not diff
 End Function
 
 
