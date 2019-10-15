@@ -2,12 +2,27 @@
 
 decrypt()
 {
-    ciphertext=$1
-    hex_key=$(echo "$2" | openssl base64 -d | xxd -c32 -p)
-    hex_iv=$(echo "$3" | openssl base64 -d | xxd -p)
+    mac=$(echo "$ciphertext" | cut -d: -f1)
+    aes_iv=$(echo "$ciphertext" | cut -d: -f2)
+    ciphertext=$(echo "$ciphertext" | cut -d: -f3)
+
+    hex_aes_key=$(echo "$aes_key" | openssl base64 -d | xxd -c1000 -p)
+    hex_aes_iv=$(echo "$aes_iv" | openssl base64 -d | xxd -c1000 -p)
+    hex_mac_key=$(echo "$mac_key" | openssl base64 -d | xxd -c1000 -p)
+    hex_ciphertext=$(echo "$ciphertext" | openssl base64 -d | xxd -c1000 -p)
+
+    b64_mac=$(echo "$hex_aes_iv$hex_ciphertext" | xxd -r -p |
+              openssl sha256 -binary -mac hmac -macopt hexkey:$hex_mac_key |
+              openssl base64)
+
+    if [ "$mac" != "$b64_mac" ]
+    then
+        echo $0: Bad MAC >&2
+        exit 1
+    fi
 
     echo "$ciphertext" |
-        openssl aes-256-cbc -d -K "$hex_key" -iv "$hex_iv" -base64
+        openssl aes-256-cbc -d -K "$hex_aes_key" -iv "$hex_aes_iv" -base64
     echo
 }
 

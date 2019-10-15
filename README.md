@@ -1,7 +1,8 @@
 AES-256-CBC in VBScript
 =======================
 
-This tiny project contains an implementation of AES-256-CBC in VBScript.
+This project provides VBScript functions to perform encryption and
+decryption with AES-256-CBC.
 
 [![View Source][Source SVG]][src]
 [![MIT License][License SVG]][L]
@@ -10,9 +11,13 @@ This tiny project contains an implementation of AES-256-CBC in VBScript.
 [License SVG]: https://img.shields.io/badge/license-MIT-blue.svg
 [src]: aes.vbs
 
-Note that this project does not implement the cryptographic primitives
-from scratch. It is only a convenient wrapper around Microsoft's Common
-Object Runtime Library (`mscorlib.dll`).
+While performing encryption/decryption, it also computes/verifies a
+message authentication code (MAC) using HMAC-SHA-256 to maintain
+integrity and authenticity of initialization vector (IV) and ciphertext.
+
+Note: This project does not implement the cryptographic primitives from
+scratch. It is a wrapper around Microsoft's Common Object Runtime
+Library (`mscorlib.dll`).
 
 
 Contents
@@ -24,39 +29,53 @@ Contents
 * [Demo Output](#demo-output)
 * [Example Ciphertexts](#example-ciphertexts)
 * [Crypto Properties](#crypto-properties)
-* [OpenSSL CLI Implementation](#openssl-cli-implementation)
+* [OpenSSL CLI Examples](#openssl-cli-examples)
 * [Questions and Answers](#questions-and-answers)
 * [References](#references)
+* [License](#license)
+* [Support](#support)
 
 
 Features
 --------
 
-Here are some features of the AES-256-CBC implementation in this
-project:
+Here are some of the features of this project:
 
-- Works with Base64 encoded key.
-- Exposes two simple functions to encrypt and decrypt data.
-- Initialization vector (IV) is automatically generated. Caller does not
-  need to worry about it.
-- The `Encrypt()` function returns the IV and ciphertext concatenated
-  together as a single string which can be stored and later fed directly
-  to the `Decrypt()` function. Again, no need to worry about maintaining
-  the IV yourself.
-- Can be used with Classic ASP. Just put the entire [source code][src]
-  within the ASP `<%` and `%>` delimiters in a file named `aes.inc` and
-  include it in ASP files with an `#include` directive like this:
+  - Works with Base64 encoded keys.
 
-  ```asp
-  <!-- #include file="aes.inc" -->
-  ```
+  - Exposes two simple functions named `Encrypt()` and `Decrypt()` that
+    perform AES-256-CBC encryption and decryption along with computing
+    and verifying MAC using HMAC-SHA-256 to ensure integrity and
+    authenticity of IV and ciphertext.
+
+  - Initialization vector (IV) is automatically generated. Caller does
+    not need to worry about it.
+
+  - Message authentication code (MAC) is computed by `Encrypt()` and
+    verified by `Decrypt()` to ensure the integrity and authenticity of
+    IV and ciphertext. HMAC-SHA-256 is used to generate MAC.
+
+  - `Encrypt()` returns the MAC, IV, and ciphertext concatenated
+    together as a single string which can then be fed directly to
+    `Decrypt()`. The three fields are joined by colons in the
+    concatenated string. No need to worry about maintaining the MAC and
+    IV yourself.
+
+  - Can be used with Classic ASP. Just put the entire [source code][src]
+    within the ASP `<%` and `%>` delimiters in a file named `aes.inc`
+    and include it in ASP files with an `#include` directive like this:
+
+    ```asp
+    <!-- #include file="aes.inc" -->
+    ```
 
 Note: This is not a crypto library. You can use it like one if all you
-want to do is AES-256-CBC encryption/decryption. But it does not support
-anything other than AES-256-CBC. If you want a different key size or
-cipher mode, you'll have to dive into the [source code][src] and modify
-it as per your needs. If you do so, you might find this documentation
-useful: [`RijndaelManaged`][RijndaelManaged].
+want to use is AES-256-CBC with HMAC-SHA-256. It does not support
+anything else. If you want a different key size, cipher mode, or MAC
+algorithm, you'll have to dive into the [source code][src] and modify it
+as per your needs. If you do so, you might find one or more of the
+documentation links provided in the [References](#references) section
+useful.
 
 
 Why?
@@ -64,19 +83,18 @@ Why?
 
 Why not?
 
-Okay, the real story behind writing this implementation involved a
-legacy application with a lot of VBScript code. It used an outdated
+Okay, the real story behind writing this project involved a legacy
+application written in Classic ASP and VBScript. It used an outdated
 cipher that needed to be updated. That's what prompted me to create a
-wrapper for AES-256-CBC in VBScript. After writing it, I thought it
-would be good to share it on the Internet in case someone else is
-looking for something like this.
+wrapper for AES-256-CBC with HMAC-SHA-256 in VBScript. After writing it,
+I thought it would be good to share it on the Internet in case someone
+else is looking for something like this.
 
 
 Demo Script
 -----------
 
-On a Windows system, enter the following command to load
-[`aes.vbs`][src] and execute the functions in it:
+On a Windows system, enter the following command to see a quick demo:
 
 ```
 cscript aesdemo.wsf
@@ -93,32 +111,34 @@ Demo Output
 
 The output from the demo script looks like this:
 
-
 ```
 demoAESKey: CKkPfmeHzhuGf2WYY2CIo5C6aGCyM5JR8gTaaI0IRJg=
-encrypted1: gNJryUZ+3QPCt9DP4HQhFQ==:YAMmzeDoPgz0ZpmSnxqb2A==
-decrypted1: foo
-encrypted2: 2dmVWVT++xbgaDq7ktdUNg==:LEd9iJAHo6bhkpkY/CcrlQ==
-decrypted2: foo
+demoMACKey: wDF4W9XQ6wy2DmI/7+ONF+mwCEr9tVgWGLGHUYnguh4=
+encrypted1: Ru7CEo3KJBMT9ati55ASO0xJOVw5+7crhL4RxQSVu1s=:dHTHWCy5sGu9z7gUAa0tpA==:sBbmFDtzkPU7kD4T1OSbvw==
+decrypted1: hello
+encrypted2: 7BnQ5trOLDk8cecEnVayfSW9Q2fA38FvFkDlwHxbAKA=:M1ipFnh884qcXYlX9NPjwA==:ANF8P0PfaUQwvcS2jiIpdQ==
+decrypted2: hello
 
 aes.BlockSize: 128
 aes.FeedbackSize: 128
 aes.KeySize: 256
 aes.Mode: 1
 aes.Padding: 2
+mac.HashName: SHA256
+mac.HashSize: 256
 aesEnc.InputBlockSize: 16
 aesEnc.OutputBlockSize: 16
 aesDec.InputBlockSize: 16
 aesDec.OutputBlockSize: 16
 b64Enc.InputBlockSize: 3
-b64Eec.OutputBlockSize: 4
+b64Enc.OutputBlockSize: 4
 b64Dec.InputBlockSize: 1
 b64Dec.OutputBlockSize: 3
 ```
 
-Only the second line of output (`encrypted1`) changes on every run
+Only the third line of output (`encrypted1`) changes on every run
 because it depends on a dynamically generated initialization vector (IV)
-that is used in the encryption. This is, in fact, an important security
+is different each time. This is, in fact, an important security
 requirement for achieving semantic security.
 
 For example, if a database contains encrypted secrets from various users
@@ -132,11 +152,11 @@ ciphertext. This is why the ciphertext needs to be different for the
 same plaintext in different encryptions and this is why we need a random
 IV for each encryption.
 
-There are two blocks of output shown above. The first block shows an
-example key and example ciphertexts along with the plaintexts they
-decrypt to. The second block shows the default properties of the
-cryptography objects used in the VBScript implementation. Both blocks of
-output are explained in detail in the sections below.
+There are two blocks of output shown above. The first block shows
+example keys and ciphertexts along with the plaintexts they decrypt to.
+The second block shows the default properties of the cryptography
+objects used in the VBScript code. Both blocks of output are explained
+in detail in the sections below.
 
 
 Example Ciphertexts
@@ -146,33 +166,37 @@ The first block of output in the demo script looks like this:
 
 ```
 demoAESKey: CKkPfmeHzhuGf2WYY2CIo5C6aGCyM5JR8gTaaI0IRJg=
-encrypted1: gNJryUZ+3QPCt9DP4HQhFQ==:YAMmzeDoPgz0ZpmSnxqb2A==
-decrypted1: foo
-encrypted2: 2dmVWVT++xbgaDq7ktdUNg==:LEd9iJAHo6bhkpkY/CcrlQ==
-decrypted2: foo
+demoMACKey: wDF4W9XQ6wy2DmI/7+ONF+mwCEr9tVgWGLGHUYnguh4=
+encrypted1: Ru7CEo3KJBMT9ati55ASO0xJOVw5+7crhL4RxQSVu1s=:dHTHWCy5sGu9z7gUAa0tpA==:sBbmFDtzkPU7kD4T1OSbvw==
+decrypted1: hello
+encrypted2: 7BnQ5trOLDk8cecEnVayfSW9Q2fA38FvFkDlwHxbAKA=:M1ipFnh884qcXYlX9NPjwA==:ANF8P0PfaUQwvcS2jiIpdQ==
+decrypted2: hello
 ```
 
-The second line of output (`encrypted1`) changes on every run because it
+The third line of output (`encrypted1`) changes on every run because it
 depends on a dynamically generated initialization vector (IV) used in
-the encryption. The fourth line of output (`encrypted2`) remains the
+the encryption. The fifth line of output (`encrypted2`) remains the
 same because it is hardcoded in the demo script.
 
 Each encrypted value in the output is actually a concatenation of the
-initialization vector (IV), colon (`:`), and ciphertext.
+message authentication code (MAC), colon (`:`), initialization vector
+(IV), colon (`:`), and ciphertext.
 
 The ciphertext is generated with a function call like this:
 
 ```vbs
-demoPlaintext = "foo"
+demoPlaintext = "hello"
 demoAESKey = "CKkPfmeHzhuGf2WYY2CIo5C6aGCyM5JR8gTaaI0IRJg="
-encrypted1 = Encrypt(demoPlaintext, demoAESKey)
+demoMACKey = "wDF4W9XQ6wy2DmI/7+ONF+mwCEr9tVgWGLGHUYnguh4="
+encrypted1 = Encrypt(demoPlaintext, demoAESKey, demoMACKey)
 ```
 
-The encrypted value (i.e., concatenated IV, colon, and ciphertext) can
-be decrypted back to plaintext with a function call like this:
+The encrypted value (i.e., concatenated MAC, colon, IV, colon, and
+ciphertext) can be decrypted back to plaintext with a function call like
+this:
 
 ```vbs
-decrypted1 = Decrypt(encrypted1, demoAESKey)
+decrypted1 = Decrypt(encrypted1, demoAESKey, demoMACKey)
 ```
 
 The `Encrypt` and `Decrypt` functions are defined in [`aes.vbs`][src].
@@ -189,12 +213,14 @@ aes.FeedbackSize: 128
 aes.KeySize: 256
 aes.Mode: 1
 aes.Padding: 2
+mac.HashName: SHA256
+mac.HashSize: 256
 aesEnc.InputBlockSize: 16
 aesEnc.OutputBlockSize: 16
 aesDec.InputBlockSize: 16
 aesDec.OutputBlockSize: 16
 b64Enc.InputBlockSize: 3
-b64Eec.OutputBlockSize: 4
+b64Enc.OutputBlockSize: 4
 b64Dec.InputBlockSize: 1
 b64Dec.OutputBlockSize: 3
 ```
@@ -221,16 +247,16 @@ that we use AES-256-CBC for encryption.
 [`PaddingMode`]: https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.paddingmode
 
 
-OpenSSL CLI Implementation
---------------------------
+OpenSSL CLI Examples
+--------------------
 
 For troubleshooting purpose, there are two shell scripts named
 [`encrypt`](encrypt) and [`decrypt`](decrypt) present in the current
 directory. Here is the synopsis of these scripts:
 
 ```shell
-sh encrypt PLAINTEXT KEY IV
-sh decrypt CIPHERTEXT KEY IV
+plaintext=PLAINTEXT aes_key=AES_KEY aes_iv=AES_IV mac_key=MAC_KEY sh encrypt
+ciphertext=CIPHERTEXT aes_key=AES_KEY mac_key=MAC_KEY sh decrypt
 ```
 
 These scripts are merely wrappers around OpenSSL. They accept Base64 key
@@ -242,27 +268,35 @@ the demo output:
 
 ```
 demoAESKey: CKkPfmeHzhuGf2WYY2CIo5C6aGCyM5JR8gTaaI0IRJg=
-encrypted2: 2dmVWVT++xbgaDq7ktdUNg==:LEd9iJAHo6bhkpkY/CcrlQ==
-decrypted2: foo
+demoMACKey: wDF4W9XQ6wy2DmI/7+ONF+mwCEr9tVgWGLGHUYnguh4=
+encrypted2: 7BnQ5trOLDk8cecEnVayfSW9Q2fA38FvFkDlwHxbAKA=:M1ipFnh884qcXYlX9NPjwA==:ANF8P0PfaUQwvcS2jiIpdQ==
+decrypted2: hello
 ```
 
 Here is how to use the [`encrypt`](encrypt) and [`decrypt`](decrypt)
 scripts:
 
- 1. Encrypt the plaintext `foo` with the demo key and IV displayed in
-    the output above.
+ 1. Encrypt the plaintext `hello` with the demo AES key and IV, and
+    compute MAC of the result with the demo MAC key:
 
     ```shell
-    sh encrypt foo CKkPfmeHzhuGf2WYY2CIo5C6aGCyM5JR8gTaaI0IRJg= 2dmVWVT++xbgaDq7ktdUNg==
+    plaintext=hello \
+    aes_key=CKkPfmeHzhuGf2WYY2CIo5C6aGCyM5JR8gTaaI0IRJg= \
+    aes_iv=M1ipFnh884qcXYlX9NPjwA== \
+    mac_key=wDF4W9XQ6wy2DmI/7+ONF+mwCEr9tVgWGLGHUYnguh4= \
+    sh encrypt
     ```
 
-    The output should match the ciphertext in the `encrypted2` value.
+    The output should match the string in the `encrypted2` value.
 
- 2. Decrypt the plaintext from the previous command using the same demo
-    AES key and IV.
+ 2. Verify MAC and decrypt the ciphertext to obtain the plaintext
+    AES keys and IV.
 
     ```shell
-    sh decrypt LEd9iJAHo6bhkpkY/CcrlQ== CKkPfmeHzhuGf2WYY2CIo5C6aGCyM5JR8gTaaI0IRJg= 2dmVWVT++xbgaDq7ktdUNg==
+    ciphertext=7BnQ5trOLDk8cecEnVayfSW9Q2fA38FvFkDlwHxbAKA=:M1ipFnh884qcXYlX9NPjwA==:ANF8P0PfaUQwvcS2jiIpdQ== \
+    aes_key=CKkPfmeHzhuGf2WYY2CIo5C6aGCyM5JR8gTaaI0IRJg= \
+    mac_key=wDF4W9XQ6wy2DmI/7+ONF+mwCEr9tVgWGLGHUYnguh4= \
+    sh decrypt
     ```
 
     The output should match the plaintext in the `decrypted2` value.
@@ -272,8 +306,7 @@ Questions and Answers
 ---------------------
 
  1. Can we not use [`AesManaged`][AesManaged] instead of
-    [`RijndaelManaged`][RijndaelManaged] in [`aes.vbs`][src] to
-    implement AES cipher in VBScript?
+    [`RijndaelManaged`][RijndaelManaged] in [`aes.vbs`][src]?
 
     No, we cannot use [`AesManaged`][AesManaged] in VBScript. We can use
     only those classes that are defined in `mscorlib.dll`.
@@ -312,8 +345,7 @@ Questions and Answers
     This is why we use [`RijndaelManaged`][RijndaelManaged] in our
     VBScript code.
 
- 2. Is [`RijndaelManaged`][RijndaelManaged] suitable for AES cipher
-    implementation?
+ 2. Is [`RijndaelManaged`][RijndaelManaged] suitable as AES cipher?
 
     Yes, it is.
 
@@ -333,43 +365,36 @@ Questions and Answers
     in the previous point and since we stick to the default key size of
     256 bits and the default block size of 128 bits while using
     [`RijndaelManaged`][RijndaelManaged] as explained in section
-    [Crypto Properties](#crypto-properties), it is a suitable AES cipher
-    implementation.
+    [Crypto Properties](#crypto-properties), it is a suitable substitute
+    for [`AesManaged`][AesManaged].
 
-    Further, the section
-    [OpenSSL CLI Implementation](#openssl-cli-implementation) shows that
-    the default properties of this cipher is compatible with
+    Further, the section [OpenSSL CLI examples](#openssl-cli-examples)
+    shows that the default properties of this cipher is compatible with
     `openssl aes-256-cbc`.
 
  3. Instead of using a Base64 encoded 256-bit key, can we not use a
     password and derive a 256-bit key from it using a key derivative
     function (KDF)?
 
-    This is not possible because there are only two implementations of
-    key derivative functions:
+    This is not easily possible in VBScript because there are only two
+    key derivative functions available in `mscorlib.dll`:
 
       - [`PasswordDeriveBytes`][PasswordDeriveBytes]: This is an
         implementation of an extension of the PBKDF1 algorithm.
       - [`Rfc2898DeriveBytes`][Rfc2898DeriveBytes]: This is an
         implementation of the PBKDF2 algorithm.
 
-    Although both of these are available in `mscorlib.dll`, they are not
-    registered in Windows registry by default. Therefore, like
-    [`AesManaged`][AesManaged] class, these two classes too cannot be
-    used in VBScript code without modifying the registry.
+    However, they are not registered in Windows registry by default.
+    Therefore, like [`AesManaged`][AesManaged] class, these two classes
+    too cannot be used in VBScript code without modifying the registry.
 
     If we consider brute-force search of the key, then in case of a key
     derived from a password using a KDF, an attacker could either search
     the password which would be inefficient due to the use of KDF or an
-    attacker could directly search the encryption key directly. The
-    former (brute-force search of password) is worse than our case where
-    we use a 256-bit key directly because with a small password and a
-    KDF with small number of iterations, a brute-force search of
-    password would require less computational time than brute-force
-    search of a 256-bit key. The latter (brute-force search of key) is
-    equivalent to our case where we use a Base64 encoded 256-bit key
-    because in both cases an attacker has to search for a 256-bit key.
-    Therefore, using a 256-bit key directly is equal or better than
+    attacker could search the encryption key directly. Brute-force
+    search of the key can be slower than brute-search of the password if
+    the password is small and small number of iterations is used in the
+    KDF. Therefore, using a 256-bit key directly is never worse than
     using a key derived from a password.
 
 
@@ -384,6 +409,7 @@ References
 - [`System.Security.Cryptography.FromBase64Transform`][FromBase64Transform]
 - [`System.Security.Cryptography.ToBase64Transform`][ToBase64Transform]
 - [`System.Security.Cryptography.RijndaelManaged`][RijndaelManaged]
+- [`System.Security.Cryptography.HMACSHA256`][HMACSHA256]
 - [FIPS 197]
 
 [winscript]: https://docs.microsoft.com/en-us/previous-versions/ms950396(v=msdn.10)
@@ -395,6 +421,7 @@ References
 [ToBase64Transform]: https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.tobase64transform
 [RijndaelManaged]: https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.rijndaelmanaged
 [AesManaged]: https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.aesmanaged
+[HMACSHA256]: https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.hmacsha256
 [PasswordDeriveBytes]: https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.passwordderivebytes
 [Rfc2898DeriveBytes]: https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.rfc2898derivebytes
 [FIPS 197]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf
@@ -417,4 +444,4 @@ Support
 -------
 
 To report bugs, suggest improvements, or ask questions, please create a
-new issue at <http://github.com/susam/aesvbs/issues>.
+new issue at <http://github.com/susam/aes.vbs/issues>.
