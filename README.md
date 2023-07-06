@@ -137,9 +137,9 @@ b64Dec.OutputBlockSize: 3
 ```
 
 Only the third line of output (`encrypted1`) changes on every run
-because it depends on a dynamically generated initialization vector (IV)
-is different each time. This is, in fact, an important security
-requirement for achieving semantic security.
+because it depends on a dynamically generated initialization vector
+(IV) which is different each time it is generated. This is, in fact,
+an important security requirement for achieving semantic security.
 
 For example, if a database contains encrypted secrets from various users
 and if the same plaintext always encrypts to the same ciphertext (which
